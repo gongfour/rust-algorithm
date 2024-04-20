@@ -1,3 +1,7 @@
+mod problems;
+
 fn main() {
-    println!("Hello, world!");
+    let mut input = String::new();
+    input.push('1');
+    // problems::p1676::main();
 }
