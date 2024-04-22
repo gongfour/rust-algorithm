@@ -5,18 +5,13 @@ use std::{
     io::{stdin, Read},
 };
 
-#[derive(Debug)]
 struct Node {
-    parent: usize,
     edges: Vec<usize>,
 }
 
 impl Node {
     fn new() -> Node {
-        Node {
-            parent: 0,
-            edges: Vec::new(),
-        }
+        Node { edges: Vec::new() }
     }
 
     fn add_edge(&mut self, edge: usize) {
@@ -24,7 +19,6 @@ impl Node {
     }
 }
 
-#[derive(Debug)]
 struct Graph {
     nodes: Vec<Node>,
 }
@@ -81,7 +75,7 @@ pub fn main() {
     let result = bfs(&mut tree, 0);
     let mut output = String::new();
     for i in 1..n {
-        write!(output, "{}\n", result[i]);
+        write!(output, "{}\n", result[i]).unwrap();
     }
 
     println!("{}", output);
