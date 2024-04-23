@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+
 struct Node {
     x: usize,
     y: usize,
@@ -7,15 +8,18 @@ struct Node {
 }
 
 impl Node {
-    fn new(x: usize, y: usize, is_use: bool, dist: usize) -> Self {
+    fn new(y: usize, x: usize, is_use: bool, dist: usize) -> Self {
         Self { x, y, is_use, dist }
     }
 }
 
 fn bfs(map: &Vec<Vec<usize>>, root: Node, end: Node) -> i32 {
+    let n = map.len();
+    let m = map[0].len();
+
     let mut queue = VecDeque::new();
-    let mut visited = vec![vec![false; map[0].len()]; map.len()];
-    let mut visited_ = vec![vec![false; map[0].len()]; map.len()];
+    let mut visited = vec![vec![false; m]; n];
+    let mut visited_b = vec![vec![false; m]; n];
 
     queue.push_back(root);
 
@@ -27,45 +31,28 @@ fn bfs(map: &Vec<Vec<usize>>, root: Node, end: Node) -> i32 {
         if x == end.x && y == end.y {
             return d as i32;
         }
-        if !b && visited[y][x] {
+
+        let visited = if !b { &mut visited } else { &mut visited_b };
+        if visited[y][x] {
             continue;
         }
-        if b && visited_[y][x] {
-            continue;
-        }
+        visited[y][x] = true;
 
-        if !b {
-            visited[y][x] = true;
-        } else {
-            visited_[y][x] = true;
-        }
+        let adj: Vec<(i32, i32)> = vec![(0, -1), (0, 1), (-1, 0), (1, 0)];
 
-        if y > 0 {
-            if map[y - 1][x] == 0 {
-                queue.push_back(Node::new(x, y - 1, b, d + 1));
-            } else if !b {
-                queue.push_back(Node::new(x, y - 1, true, d + 1));
+        for (dx, dy) in adj {
+            let nx = x as i32 + dx;
+            let ny = y as i32 + dy;
+            if nx < 0 || ny < 0 || ny >= n as i32 || nx >= m as i32 {
+                continue;
             }
-        }
-        if y < map.len() - 1 {
-            if map[y + 1][x] == 0 {
-                queue.push_back(Node::new(x, y + 1, b, d + 1));
+            let nx = nx as usize;
+            let ny = ny as usize;
+
+            if map[y][x] == 0 {
+                queue.push_back(Node::new(ny, nx, b, d + 1));
             } else if !b {
-                queue.push_back(Node::new(x, y + 1, true, d + 1));
-            }
-        }
-        if x > 0 {
-            if map[y][x - 1] == 0 {
-                queue.push_back(Node::new(x - 1, y, b, d + 1));
-            } else if !b {
-                queue.push_back(Node::new(x - 1, y, true, d + 1));
-            }
-        }
-        if x < map[0].len() - 1 {
-            if map[y][x + 1] == 0 {
-                queue.push_back(Node::new(x + 1, y, b, d + 1));
-            } else if !b {
-                queue.push_back(Node::new(x + 1, y, true, d + 1));
+                queue.push_back(Node::new(ny, nx, true, d + 1));
             }
         }
     }
@@ -97,7 +84,7 @@ pub fn main() {
     let output = bfs(
         &map,
         Node::new(0, 0, false, 1),
-        Node::new(m - 1, n - 1, false, 1),
+        Node::new(n - 1, m - 1, false, 1),
     );
     println!("{}", output);
 }
