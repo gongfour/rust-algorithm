@@ -2,6 +2,7 @@
 // pub mod p11659;
 pub mod p1012;
 pub mod p1167;
+pub mod p11724;
 pub mod p11725;
 pub mod p1676;
 pub mod p1967;
