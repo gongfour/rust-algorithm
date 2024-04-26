@@ -11,24 +11,33 @@ impl Student {
     }
 }
 
-fn dfs(students: &mut Vec<Student>, start: usize) -> (usize, Vec<usize>) {
+fn dfs(students: &mut Vec<Student>, visited: &mut Vec<bool>, start: usize) -> Vec<usize> {
     let mut stack = vec![start];
-    let mut visited = vec![false; students.len() + 1];
-    let mut count = 0;
     let mut team = vec![];
 
-    while let Some(mut cur) = stack.pop() {
-        if visited[cur] && start == cur {
-            return (count, team);
-        } else if visited[cur] {
-            return (0, vec![]);
-        }
-        count += 1;
+    while let Some(cur) = stack.pop() {
         team.push(cur);
+        if visited[cur] {
+            return team;
+        }
         visited[cur] = true;
         stack.push(students[cur].want);
     }
-    (0, vec![])
+    team
+}
+
+// [4, 7, 6, 4]
+fn count_cycle(s: &mut Vec<usize>) -> usize {
+    let mut sum = 0;
+    s.reverse();
+    let iter = s.iter().skip(1);
+    for v in iter {
+        sum += 1;
+        if *v == s[0] {
+            return sum;
+        }
+    }
+    0
 }
 
 pub fn main() {
@@ -46,15 +55,12 @@ pub fn main() {
             students[i].want = want;
         }
 
-        let mut sum = 0;
         let mut visited = vec![false; n + 1];
+        let mut sum = 0;
         for i in 1..=n {
             if !visited[i] {
-                let s = dfs(&mut students, i);
-                sum += s.0;
-                for j in s.1 {
-                    visited[j] = true;
-                }
+                let mut s = dfs(&mut students, &mut visited, i);
+                sum += count_cycle(&mut s);
             }
         }
         println!("{}", n - sum);
