@@ -9,6 +9,7 @@ pub mod p1182;
 pub mod p1197;
 pub mod p1676;
 pub mod p1806;
+pub mod p1927;
 pub mod p1967;
 pub mod p2206;
 pub mod p2606;
