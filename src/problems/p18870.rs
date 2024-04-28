@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::io::Read;
 
 pub fn main() {
@@ -7,17 +8,18 @@ pub fn main() {
 
     let n: usize = iter.next().unwrap().parse().unwrap();
     let d = iter.map(|x| x.parse().unwrap()).collect::<Vec<i32>>();
-    let mut dd = d.clone();
-    dd.sort();
-    dd.dedup();
 
-    let ed: Vec<(usize, &i32)> = dd.iter().enumerate().collect();
+    let mut ed = d.clone();
+    ed.sort();
 
-    // println!("{:?}", ed);
+    let mut h = HashMap::new();
+    for (i, x) in ed.iter().enumerate() {
+        if h.get(x).is_none() {
+            h.insert(x, i);
+        }
+    }
 
-    for x in d.iter() {
-        let i = ed.binary_search_by(|a| a.1.cmp(x)).unwrap();
-        // println!("{} {} ", x, i);
-        print!("{} ", i);
+    for x in d {
+        print!("{} ", h[&x]);
     }
 }
