@@ -41,23 +41,32 @@ impl Map {
     fn move_marble(&mut self, ms: (Marble, Marble), d: &Direction) -> (Marble, Marble) {
         let mut m1 = ms.0;
         let mut m2 = ms.1;
+        let mut goal_1 = false;
+        let mut goal_2 = false;
         loop {
             let next_m1 = m1 + *d;
             let next_m2 = m2 + *d;
 
+            let mut moved = false;
             if self.map[next_m1.y][next_m1.x] == 'O' {
-                return (next_m1, next_m2);
+                m1 = next_m1;
+                goal_1 = true;
             }
             if self.map[next_m2.y][next_m2.x] == 'O' {
-                return (next_m1, next_m2);
+                m2 = next_m2;
+                goal_2 = true;
             }
-
-            let mut moved = false;
-            if self.map[next_m1.y][next_m1.x] == '.' {
+            if self.map[next_m1.y][next_m1.x] == '.'
+                && !(next_m1.y == m2.y && next_m1.x == m2.x)
+                && !goal_1
+            {
                 m1 = next_m1;
                 moved = true;
             }
-            if self.map[next_m2.y][next_m2.x] == '.' {
+            if self.map[next_m2.y][next_m2.x] == '.'
+                && !(next_m2.y == m1.y && next_m2.x == m1.x)
+                && !goal_2
+            {
                 m2 = next_m2;
                 moved = true;
             }
@@ -111,19 +120,18 @@ fn bfs(map: &mut Map, red: Marble, blue: Marble) -> i32 {
     let mut queue = std::collections::VecDeque::new();
     let dirs = [
         Direction { dy: 0, dx: 0 },  // stay
-        Direction { dy: -1, dx: 0 }, // up
-        Direction { dy: 1, dx: 0 },  // down
-        Direction { dy: 0, dx: -1 }, // left
-        Direction { dy: 0, dx: 1 },  // right
+        Direction { dy: -1, dx: 0 }, // 1. up
+        Direction { dy: 1, dx: 0 },  // 2. down
+        Direction { dy: 0, dx: -1 }, // 3. left
+        Direction { dy: 0, dx: 1 },  // 4. right
     ];
     let lt = vec![vec![], vec![1, 2], vec![1, 2], vec![3, 4], vec![3, 4]];
-    queue.push_back((red, blue, 0, 0));
+    queue.push_back((red, blue, 0, vec![0]));
 
     while let Some((r, b, c, d)) = queue.pop_front() {
-        println!("d: {}, c: {}", d, c);
-        println!("r: {}, b: {}", r, b);
-        map.draw_map(&r, &b);
-        if c > 2 {
+        // map.draw_map(&r, &b);
+        // println!("d: {:?}, r: {}, b: {}", d, r, b);
+        if c > 10 {
             return -1;
         }
         if map.map[b.y][b.x] == 'O' {
@@ -134,11 +142,17 @@ fn bfs(map: &mut Map, red: Marble, blue: Marble) -> i32 {
         }
 
         for i in 1..5 {
-            if lt[d].contains(&i) {
+            let last = d.last().unwrap();
+            if lt[*last].contains(&i) {
                 continue;
             }
-            let (r, b) = map.move_marble((r, b), &dirs[i]);
-            queue.push_back((r, b, c + 1, i));
+            let (nr, nb) = map.move_marble((r, b), &dirs[i]);
+            if nr == r && nb == b {
+                continue;
+            }
+            let mut dd = d.clone();
+            dd.push(i);
+            queue.push_back((nr, nb, c + 1, dd));
         }
     }
     -1
@@ -167,7 +181,15 @@ pub fn main() {
         }
     }
 
-    println!("{}", map);
+    // map.draw_map(&red, &blue);
+    // (red, blue) = map.move_marble((red, blue), &Direction { dy: 0, dx: -1 });
+    // map.draw_map(&red, &blue);
+    // (red, blue) = map.move_marble((red, blue), &Direction { dy: 1, dx: 0 });
+    // map.draw_map(&red, &blue);
+    // (red, blue) = map.move_marble((red, blue), &Direction { dy: 0, dx: 1 });
+    // map.draw_map(&red, &blue);
+    // (red, blue) = map.move_marble((red, blue), &Direction { dy: 1, dx: 0 });
+    // map.draw_map(&red, &blue);
     let ans = bfs(&mut map, red, blue);
     println!("{}", ans);
 }
