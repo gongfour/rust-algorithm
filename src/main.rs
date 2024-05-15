@@ -1,5 +1,5 @@
 mod problems;
 
 fn main() {
-    problems::p1991::main();
+    problems::p1260::main();
 }
