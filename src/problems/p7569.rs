@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use std::io::Read;
 
-type Map = Vec<Vec<Vec<i32>>>;
+type Map = Vec<Vec<Vec<i8>>>;
 type Pos = (usize, usize, usize);
 type Visited = Vec<Vec<Vec<bool>>>;
 
@@ -57,7 +57,7 @@ pub fn main() {
     for i in 0..h {
         for j in 0..n {
             for k in 0..m {
-                map[i][j][k] = tokens.next().unwrap().parse::<i32>().unwrap();
+                map[i][j][k] = tokens.next().unwrap().parse::<i8>().unwrap();
                 if map[i][j][k] == 1 {
                     starts.push((i, j, k));
                 }
