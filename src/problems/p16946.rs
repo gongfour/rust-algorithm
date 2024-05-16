@@ -27,17 +27,18 @@ fn bfs(
     board: &Board<u8>,
     yx: (usize, usize),
     visited: &mut Board<bool>,
-    output: &mut Vec<(usize, usize, usize)>,
-) {
+    output: &mut Vec<(usize, usize)>,
+) -> usize {
     let mut queue = VecDeque::new();
-    queue.push_back((yx.0, yx.1, 0));
+    queue.push_back(yx);
+    let mut area = 0;
 
-    while let Some((y, x, d)) = queue.pop_front() {
+    while let Some((y, x)) = queue.pop_front() {
         if visited[y][x] || board[y][x] == 1 {
             continue;
         }
+        area += 1;
         visited[y][x] = true;
-        output.push((y, x, d));
 
         let y = y as i32;
         let x = x as i32;
@@ -56,50 +57,13 @@ fn bfs(
             let nx = *nx as usize;
 
             if board[ny][nx] == 0 {
-                queue.push_back((ny, nx, d + 1));
+                queue.push_back((ny, nx));
+            } else {
+                output.push((ny, nx));
             }
         }
     }
-}
-
-#[derive(Debug)]
-struct UnionFind {
-    parent: Vec<usize>,
-    rank: Vec<usize>,
-}
-
-impl UnionFind {
-    fn new(n: usize) -> Self {
-        UnionFind {
-            parent: (0..n).collect(),
-            rank: vec![0; n],
-        }
-    }
-
-    fn find(&mut self, mut x: usize) -> usize {
-        while self.parent[x] != x {
-            x = self.parent[x];
-        }
-        x
-    }
-
-    fn union(&mut self, x: usize, y: usize) {
-        let x = self.find(x);
-        let y = self.find(y);
-
-        if x == y {
-            return;
-        }
-
-        if self.rank[x] < self.rank[y] {
-            self.parent[x] = y;
-        } else {
-            self.parent[y] = x;
-            if self.rank[x] == self.rank[y] {
-                self.rank[x] += 1;
-            }
-        }
-    }
+    area
 }
 
 pub fn main() {
@@ -121,7 +85,6 @@ pub fn main() {
         }
     }
 
-    let mut uf = UnionFind::new(n * m);
     let mut board_count = Board::new(n, m, 0);
     let mut visited = Board::new(n, m, false);
     for y in 0..n {
@@ -130,65 +93,26 @@ pub fn main() {
                 continue;
             }
 
-            let mut output = Vec::new();
-            bfs(&board, (y, x), &mut visited, &mut output);
-
-            for (ny, nx, _) in &output {
-                uf.union(y * m + x, *ny * m + *nx);
-                board_count[*ny][*nx] = output.len();
-            }
-        }
-    }
-    // println!("{:?}", uf);
-
-    let mut board_output = Board::new(n, m, 0);
-    for y in 0..n {
-        for x in 0..m {
-            if board[y][x] != 1 {
-                continue;
-            }
-
-            let y = y as i32;
-            let x = x as i32;
-
-            let mut count = 1 as usize;
-            let adjs = [(y, x - 1), (y, x + 1), (y - 1, x), (y + 1, x)];
-            let mut adjs = adjs
-                .iter()
-                .filter(|(ny, nx)| {
-                    *ny >= 0
-                        && *nx >= 0
-                        && *ny < n as i32
-                        && *nx < m as i32
-                        && board[*ny as usize][*nx as usize] == 0
-                })
-                .map(|(ny, nx)| uf.find(*ny as usize * m + *nx as usize))
-                .collect::<Vec<_>>();
-
+            let mut adjs = Vec::new();
+            let area = bfs(&board, (y, x), &mut visited, &mut adjs);
             adjs.sort();
             adjs.dedup();
 
-            for adj in adjs.iter() {
-                let key = *adj as usize;
-                count += board_count[key / m][key % m] as usize;
+            for (ny, nx) in &adjs {
+                board_count[*ny][*nx] += area;
             }
-
-            let y = y as usize;
-            let x = x as usize;
-
-            board_output[y][x] = (count % 10) as u8;
         }
     }
-    // println!("{}", board_count);
-    // println!("{}", board);
-    // println!("{}", board_output);
 
-    for row in &board_output.0 {
-        for cell in row {
-            print!("{}", cell);
+    let mut board_output = Board::new(n, m, 0 as u8);
+    for y in 0..n {
+        for x in 0..m {
+            if board[y][x] == 1 {
+                board_output[y][x] = ((board_count[y][x] + 1) % 10) as u8;
+            }
         }
-        println!();
     }
+    println!("{}", board_output);
 }
 
 impl<T: fmt::Display> fmt::Display for Board<T> {
